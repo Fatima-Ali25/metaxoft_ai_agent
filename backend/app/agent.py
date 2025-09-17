@@ -6,9 +6,11 @@ from .ai_services import services
 
 load_dotenv()
 
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise RuntimeError("API KEY IS NOT FOUND")
+api_key = os.getenv("GEMINI_API_KEY", "test-key-for-development")
+if not api_key or api_key == "test-key-for-development":
+    print("WARNING: Using test API key. Please set GEMINI_API_KEY environment variable for production.")
+    # For development, we'll use a mock response instead of calling the API
+    api_key = "test-key-for-development"
 
 external_client = AsyncOpenAI(
     api_key=api_key,
@@ -36,6 +38,7 @@ FORMATTING
 - Use bullets and short lists:
   - Arrows like "→ "
   - use bold text for the most important information
+  - break the text into paragraphs
   - use italic text for the least important information
   - Numbers like "1) "
   - Keep your responses concise (under 6 sentences). 
@@ -75,5 +78,9 @@ OUTPUT RULE
 )
 
 async def run_agent(message: str) -> str:
+    if api_key == "test-key-for-development":
+        # Return a mock response for development
+        return f"Hello! I'm the Metaxoft AI Assistant. You said: '{message}'. This is a test response. Please set your GEMINI_API_KEY environment variable to use the real AI agent."
+    
     result = await Runner.run(agent, message, run_config=config)
     return result.final_output
